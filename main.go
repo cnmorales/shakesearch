@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"index/suffixarray"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 )
 
 func main() {
@@ -42,16 +43,39 @@ type Searcher struct {
 
 func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		query, ok := r.URL.Query()["q"]
-		if !ok || len(query[0]) < 1 {
+		query := r.URL.Query()
+
+		q := query.Get("q")
+		if q == "" || len(q) < 1 {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("missing search query in URL params"))
 			return
 		}
-		results := searcher.Search(query[0])
+
+		rgx := "(?i)(%s)"
+		if caseSensitiveParam := query.Get("cs"); caseSensitiveParam == "on" {
+			rgx = "(%s)"
+		}
+
+		if wholeWordParam := query.Get("ww"); wholeWordParam == "on" {
+			rgx = fmt.Sprintf("\\b%s\\b", rgx)
+		}
+
+		rgxExpr, err := regexp.Compile(fmt.Sprintf(rgx, q))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("encoding failure"))
+			return
+		}
+
+		results := searcher.Search(rgxExpr)
 		buf := &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
-		err := enc.Encode(results)
+
+		// set false encoder option escape html to highlight results
+		// enc.SetEscapeHTML(false)
+
+		err = enc.Encode(results)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("encoding failure"))
@@ -63,7 +87,7 @@ func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request
 }
 
 func (s *Searcher) Load(filename string) error {
-	dat, err := ioutil.ReadFile(filename)
+	dat, err := os.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("Load: %w", err)
 	}
@@ -72,11 +96,28 @@ func (s *Searcher) Load(filename string) error {
 	return nil
 }
 
-func (s *Searcher) Search(query string) []string {
-	idxs := s.SuffixArray.Lookup([]byte(query), -1)
+func (s *Searcher) Search(rgxExpr *regexp.Regexp) []string {
+
+	idxs := s.SuffixArray.FindAllIndex(rgxExpr, -1)
+
 	results := []string{}
 	for _, idx := range idxs {
-		results = append(results, s.CompleteWorks[idx-250:idx+250])
+
+		// To avoid runtime error slice bounds out of range in case that the match is in the first or last words
+		fromIdx := idx[0] - 250
+		if fromIdx < 0 {
+			fromIdx = 0
+		}
+
+		toIdx := idx[1] + 250
+		if toIdx > len(s.CompleteWorks)-1 {
+			toIdx = len(s.CompleteWorks) - 1
+		}
+
+		str := []string{s.CompleteWorks[fromIdx:idx[0]], "<mark>", s.CompleteWorks[idx[0]:idx[1]], "</mark>", s.CompleteWorks[idx[1]:toIdx]}
+
+		results = append(results, strings.Join(str, ""))
 	}
+
 	return results
 }

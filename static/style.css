@@ -50,6 +50,11 @@ hr {
   padding: 0;
 }
 
+mark {
+  background-color: yellow;
+  color: black;
+}
+
 /*
    * Remove the gap between audio, canvas, iframes,
    * images, videos and the bottom of their containers:
