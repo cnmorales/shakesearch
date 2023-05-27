@@ -79,11 +79,16 @@ func buildRegexExprWithQuery(query url.Values) (*regexp.Regexp, error) {
 		return nil, fmt.Errorf("missing search query in URL params")
 	}
 
+	// multiple values support
+	q = strings.Replace(q, " ", "|", -1)
+
+	// case-insensitive by default
 	rgx := "(?i)(%s)"
 	if caseSensitiveParam := query.Get("cs"); caseSensitiveParam == "on" {
 		rgx = "(%s)"
 	}
 
+	// match only whole words
 	if wholeWordParam := query.Get("ww"); wholeWordParam == "on" {
 		rgx = fmt.Sprintf("\\b%s\\b", rgx)
 	}

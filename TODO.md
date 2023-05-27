@@ -11,6 +11,7 @@
 - more than one word
 - paginado...
 - visual upgrade
+- quantity of results
 
 ### Top things to do
 
@@ -28,3 +29,5 @@
 - values as boolean when calling backend
 - manejo de errores y validations por separado
 - resaltar lo encontrado por front y no por backend. Responsabilidades
+- order multisearch by best matches
+- 
