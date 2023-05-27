@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"regexp"
-	"strings"
 )
 
 const charLimit = 250
@@ -108,66 +107,55 @@ func (s *Searcher) Search(rgxExpr *regexp.Regexp) []string {
 
 	idxs := s.SuffixArray.FindAllIndex(rgxExpr, -1)
 
-	results := []string{}
-	str := []string{}
+	var results []string
 
-	var previousToIdx int
+	var fromIdx int
+	var toIdx int
+
+	// si es el primero de un parrafo
+	if len(idxs) > 0 {
+		fromIdx = idxs[0][0] - charLimit
+		toIdx = idxs[0][1] + charLimit
+	}
 
 	for _, idx := range idxs {
 
-		if idx[1] < previousToIdx+charLimit {
-
-			// if the value is the first one
-			if previousToIdx == 0 {
-				// To avoid runtime error slice bounds out of range in case that the match is in the first or last words
-				if idx[0]-charLimit < 0 {
-					previousToIdx = 0
-				}
-			}
-
-			// si es menor incluyo todo el texto hasta el find de este valor
-
-			prevStr := s.CompleteWorks[previousToIdx:idx[0]]
-
-			// if it is the first block, first word must be complete
-			if len(str) == 0 {
-				prevStrArray := strings.Split(prevStr, " ")
-				prevStr = strings.Join(prevStrArray[1:], " ")
-			}
-
-			str = append(str, prevStr, "<mark>", s.CompleteWorks[idx[0]:idx[1]], "</mark>")
-			previousToIdx = idx[1]
+		// si esta contenido en el anterior, cambio el to y sigo
+		if idx[1] < toIdx {
+			toIdx = idx[1] + charLimit
 
 		} else {
 
-			// si el desde no esta incluido en el anterior, cierro el parrafo, lo agrego a result
-			// y limpio la variable str
+			if fromIdx < 0 {
+				fromIdx = 0
+			}
 
-			// To avoid runtime error slice bounds out of range in case that the match is in the first or last words
-			toIdx := previousToIdx + charLimit
 			if toIdx > len(s.CompleteWorks)-1 {
 				toIdx = len(s.CompleteWorks) - 1
 			}
 
-			postStr := s.CompleteWorks[previousToIdx:toIdx]
-			postStrArray := strings.Split(postStr, " ")
-			str = append(str, strings.Join(postStrArray[:len(postStrArray)-1], " "))
+			// si no lo esta, armo el mensaje y limpio los indices
+			results = append(results, s.CompleteWorks[fromIdx:toIdx])
 
-			results = append(results, strings.Join(str, ""))
+			fromIdx = idx[0] - charLimit
+			toIdx = idx[1] + charLimit
 
-			// cleans str buffer
-			str = []string{}
-
-			// start new block with the new-found value
-			fromIdx := idx[0] - charLimit
-			prevStr := s.CompleteWorks[fromIdx:idx[0]]
-			prevStrArray := strings.Split(prevStr, " ")
-
-			str = append(str, strings.Join(prevStrArray[1:], " "), "<mark>", s.CompleteWorks[idx[0]:idx[1]], "</mark>")
-
-			previousToIdx = idx[1]
 		}
 
+	}
+
+	// si quedo algo lo agrego
+	if fromIdx != 0 && toIdx != 0 {
+
+		if fromIdx < 0 {
+			fromIdx = 0
+		}
+
+		if toIdx > len(s.CompleteWorks)-1 {
+			toIdx = len(s.CompleteWorks) - 1
+		}
+
+		results = append(results, s.CompleteWorks[fromIdx:toIdx])
 	}
 
 	return results
