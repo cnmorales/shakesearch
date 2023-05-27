@@ -14,7 +14,8 @@ const Controller = {
     const table = document.getElementById("table-body");
     const rows = [];
     for (let result of results) {
-      rows.push(`<tr>${result}<tr/>`);
+      result = result.replace(/\r\n|\n|\r/gm, '<br />')
+      rows.push(`<tr><th>${result}<tr/></th>`);
     }
     table.innerHTML = rows;
   },

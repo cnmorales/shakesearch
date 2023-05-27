@@ -120,6 +120,7 @@ func (s *Searcher) Search(rgxExpr *regexp.Regexp) []string {
 
 	for _, idx := range idxs {
 
+		// Check if the next result is near previous one, if so, concatenate it
 		if idx[1] < previousToIdx+charLimit {
 
 			// if the value is the first one
@@ -130,11 +131,11 @@ func (s *Searcher) Search(rgxExpr *regexp.Regexp) []string {
 				}
 			}
 
-			// si es menor incluyo todo el texto hasta el find de este valor
-
+			// concatenate text between results
 			prevStr := s.CompleteWorks[previousToIdx:idx[0]]
 
 			// if it is the first block, first word must be complete
+			// at this moment it is safe to remove the first word because this not included the searched word
 			if len(str) == 0 {
 				prevStrArray := strings.Split(prevStr, " ")
 				prevStr = strings.Join(prevStrArray[1:], " ")
@@ -145,23 +146,26 @@ func (s *Searcher) Search(rgxExpr *regexp.Regexp) []string {
 
 		} else {
 
-			// si el desde no esta incluido en el anterior, cierro el parrafo, lo agrego a result
-			// y limpio la variable str
+			if previousToIdx != 0 {
+				// if the next result is not included in the previous block, concatenates the following words and
+				// cleans the temp var
 
-			// To avoid runtime error slice bounds out of range in case that the match is in the first or last words
-			toIdx := previousToIdx + charLimit
-			if toIdx > len(s.CompleteWorks)-1 {
-				toIdx = len(s.CompleteWorks) - 1
+				// To avoid runtime error slice bounds out of range in case that the match is at the end
+				toIdx := previousToIdx + charLimit
+				if toIdx > len(s.CompleteWorks)-1 {
+					toIdx = len(s.CompleteWorks) - 1
+				}
+
+				postStr := s.CompleteWorks[previousToIdx:toIdx]
+
+				postStrArray := strings.Split(postStr, " ")
+				str = append(str, strings.Join(postStrArray[:len(postStrArray)-1], " "))
+
+				results = append(results, strings.Join(str, ""))
+
+				// cleans str buffer
+				str = []string{}
 			}
-
-			postStr := s.CompleteWorks[previousToIdx:toIdx]
-			postStrArray := strings.Split(postStr, " ")
-			str = append(str, strings.Join(postStrArray[:len(postStrArray)-1], " "))
-
-			results = append(results, strings.Join(str, ""))
-
-			// cleans str buffer
-			str = []string{}
 
 			// start new block with the new-found value
 			fromIdx := idx[0] - charLimit

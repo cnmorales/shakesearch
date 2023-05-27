@@ -4,18 +4,17 @@
 - case sensitive param
 - matching word highlight
 - validate if a result already exists inside other result
+- more than one word, separate with spaces in query
 
 ### TO DO list
 
-- remover caracteres invalidos http
-- more than one word
 - paginado...
 - visual upgrade
 - quantity of results
 
 ### Top things to do
 
-- predictivo posibles words
+ - predictivo posibles words
  - empieza el predictivo con 3 caracteres o mas
  - puedo mostrar palabras similares
 
