@@ -19,7 +19,59 @@ const Controller = {
     }
     table.innerHTML = rows;
   },
+
 };
 
 const form = document.getElementById("form");
 form.addEventListener("submit", Controller.search);
+
+// getting all required elements
+const searchInput = document.querySelector(".searchInput");
+const input = searchInput.querySelector("input");
+const resultBox = searchInput.querySelector(".resultBox");
+const icon = searchInput.querySelector(".icon");
+let linkTag = searchInput.querySelector("a");
+let webLink;
+
+function showResults(val) {
+  if (val.length < 3) {
+      searchInput.classList.remove("active"); //hide autocomplete box
+      return;
+  }
+  res = document.getElementById("result");
+  res.innerHTML = '';
+  if (val == '') {
+    return;
+  }
+  let list = '';
+  fetch('/suggest?q=' + val).then(
+      function (response) {
+        return response.json();
+      }).then(function (data) {
+    for (i=0; i<data.length; i++) {
+      list += '<li>' + data[i] + '</li>';
+    }
+    res.innerHTML = '<ul>' + list + '</ul>';
+
+    searchInput.classList.add("active"); //show autocomplete box
+
+    let allList = resultBox.querySelectorAll("li");
+    for (let i = 0; i < allList.length; i++) {
+      //adding onclick attribute in all li tag
+      //allList[i].setAttribute("onclick", "select(this)");
+      allList[i].addEventListener('click', function () {
+        input.value = this.innerHTML;
+        closeList();
+      });
+    }
+
+    return true;
+  }).catch(function (err) {
+    console.warn('Something went wrong.', err);
+    return false;
+  });
+}
+
+function closeList() {
+  searchInput.classList.remove("active");
+}
