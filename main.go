@@ -26,6 +26,7 @@ func main() {
 	http.Handle("/", fs)
 
 	http.HandleFunc("/search", handleSearch(searcher))
+	http.HandleFunc("/suggest", handleSuggestions(searcher))
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -56,6 +57,45 @@ func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request
 		}
 
 		results := searcher.Search(rgxExpr)
+		buf := &bytes.Buffer{}
+		enc := json.NewEncoder(buf)
+
+		// set false encoder option escape html
+		// enc.SetEscapeHTML(false)
+
+		err = enc.Encode(results)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("encoding failure"))
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(buf.Bytes())
+	}
+}
+
+func handleSuggestions(searcher Searcher) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query()
+
+		q := query.Get("q")
+		if q == "" || len(q) < 3 {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("missing search query in URL params"))
+			return
+		}
+
+		values := strings.Split(q, " ")
+
+		rgx := "(?i)[^\\w](%s)\\w*"
+		rgxExpr, err := regexp.Compile(fmt.Sprintf(rgx, values[0]))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(err.Error()))
+			return
+		}
+
+		results := searcher.Suggestions(rgxExpr)
 		buf := &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
 
@@ -177,6 +217,44 @@ func (s *Searcher) Search(rgxExpr *regexp.Regexp) []string {
 			previousToIdx = idx[1]
 		}
 
+	}
+
+	return results
+}
+
+// TODO add go doc
+func (s *Searcher) Suggestions(rgxExpr *regexp.Regexp) []string {
+
+	idxs := s.SuffixArray.FindAllIndex(rgxExpr, -1)
+
+	results := []string{}
+	m := make(map[string]string)
+	var count int
+
+	for _, idx := range idxs {
+
+		toIdx := idx[1] + 30
+		if toIdx > len(s.CompleteWorks)-1 {
+			toIdx = len(s.CompleteWorks)
+		}
+
+		// TODO  tener en cuenta que toma palabras por la mitad, la regex deberia empezar asi la palabra
+		key := s.CompleteWorks[idx[0]:toIdx]
+		before, _, found := strings.Cut(key, " ")
+		if found {
+			key = before
+		}
+
+		_, ok := m[key]
+		// If the key doesn't exist
+		if !ok {
+			m[key] = key
+			results = append(results, key)
+			count++
+			if count > 10 {
+				break
+			}
+		}
 	}
 
 	return results
