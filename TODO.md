@@ -2,10 +2,11 @@
 
 - whole word param
 - case sensitive param
-- matching word highlight 
+- matching word highlight
+- validate if a result already exists inside other result
 
 ### TO DO list
-- validate if a result already exists inside other result
+
 - remover caracteres invalidos http
 - more than one word
 - paginado...
