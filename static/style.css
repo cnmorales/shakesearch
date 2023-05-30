@@ -55,18 +55,9 @@ mark {
   color: black;
 }
 
-.styled-table {
-  border-collapse: collapse;
-  margin: 25px 0;
-  font-size: 0.8em;
-  font-family: sans-serif;
-  min-width: 400px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
-}
-
 .styled-table thead tr {
   background-color: #009879;
-  color: #ffffff;
+  color: #fff;
   text-align: left;
 }
 
@@ -76,16 +67,19 @@ mark {
 }
 
 .styled-table tbody tr {
-  border-bottom: 1px solid #dddddd;
+  border-bottom: 2px solid #000000;
   text-align: justify;
 }
 
 .styled-table tbody tr:nth-of-type(even) {
   background-color: #f3f3f3;
+  border-bottom: 2px solid #000000;
+  text-align: justify;
 }
 
 .styled-table tbody tr:last-of-type {
-  border-bottom: 2px solid #009879;
+  border-bottom: 2px solid #000000;
+  text-align: justify;
 }
 
 /*
@@ -109,12 +103,7 @@ body{
   background: #664AFF;
 }
 
-.container{
-  max-width: 450px;
-  margin: 150px auto;
-}
-
-.container .searchInput{
+.searchInput{
   background: #fff;
   width: 100%;
   border-radius: 5px;
@@ -180,6 +169,53 @@ body{
   cursor: pointer;
 }
 
+.form-style{
+  max-width: 500px;
+  padding: 10px 20px;
+  margin: 10px auto;
+  padding: 20px;
+  background: #f4f7f8;
+  border-radius: 8px;
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+#results {
+  background: #ffffff;
+}
+
+.form-style fieldset{
+  border: none;
+}
+.form-style legend {
+  font-size: 1.4em;
+  margin-bottom: 10px;
+}
+.form-style label {
+  margin-bottom: 8px;
+}
+
+.form-style button[type="submit"],
+.form-style button[type="button"]
+{
+  position: relative;
+  display: block;
+  padding: 19px 39px 18px 39px;
+  color: #FFF;
+  margin: 0 auto;
+  background: #1abc9c;
+  font-size: 18px;
+  text-align: center;
+  font-style: normal;
+  width: 100%;
+  border: 1px solid #16a085;
+  border-width: 1px 1px 3px;
+  margin-bottom: 10px;
+}
+.form-style button[type="submit"]:hover,
+.form-style button[type="button"]:hover
+{
+  background: #109177;
+}
 
 /*
    * Remove the gap between audio, canvas, iframes,
@@ -311,9 +347,9 @@ textarea {
 }
 
 @media print,
-  (-webkit-min-device-pixel-ratio: 1.25),
-  (min-resolution: 1.25dppx),
-  (min-resolution: 120dpi) {
+(-webkit-min-device-pixel-ratio: 1.25),
+(min-resolution: 1.25dppx),
+(min-resolution: 120dpi) {
   /* Style adjustments for high resolution devices */
 }
 

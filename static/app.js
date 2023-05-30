@@ -11,8 +11,12 @@ const Controller = {
   },
 
   updateTable: (results) => {
+    const thead = document.getElementById("table-head");
+    thead.innerHTML = "<tr><th>Results</th></tr>"
+
     const table = document.getElementById("table-body");
     const rows = [];
+
     for (let result of results) {
       result = result.replace(/\r\n|\n|\r/gm, '<br />')
       rows.push(`<tr><th>${result}<tr/></th>`);
@@ -53,6 +57,7 @@ function showResults(val) {
     }
     res.innerHTML = '<ul>' + list + '</ul>';
 
+    document.addEventListener('click', clickOutside);
     searchInput.classList.add("active"); //show autocomplete box
 
     let allList = resultBox.querySelectorAll("li");
@@ -74,4 +79,12 @@ function showResults(val) {
 
 function closeList() {
   searchInput.classList.remove("active");
+  document.removeEventListener('click', clickOutside);
+}
+
+function clickOutside(event) {
+  if (event.target !== input) {
+    document.removeEventListener('click', clickOutside);
+    searchInput.classList.remove("active");
+  }
 }

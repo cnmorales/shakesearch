@@ -87,6 +87,7 @@ func handleSuggestions(searcher Searcher) func(w http.ResponseWriter, r *http.Re
 
 		values := strings.Split(q, " ")
 
+		// Match only words between symbols or blanks. This is not case-sensitive
 		rgx := "(?i)[^\\w](%s)\\w*"
 		rgxExpr, err := regexp.Compile(fmt.Sprintf(rgx, values[0]))
 		if err != nil {
@@ -148,7 +149,9 @@ func (s *Searcher) Load(filename string) error {
 	return nil
 }
 
-// TODO add go doc
+// Search This function is responsible for finding the words that match the requested search criteria. To provide more
+// readable results, removes words that are not complete at the beginning and end of each element to return.
+// It is also responsible for adding the <mark> tag to highlight the word.
 func (s *Searcher) Search(rgxExpr *regexp.Regexp) []string {
 
 	idxs := s.SuffixArray.FindAllIndex(rgxExpr, -1)
@@ -222,32 +225,24 @@ func (s *Searcher) Search(rgxExpr *regexp.Regexp) []string {
 	return results
 }
 
-// TODO add go doc
+// Suggestions Searches for all the words that begin with the value received by parameter. A list of the first 10 is
+// returned. This list is used to load the variable with id 'result' in index.html
 func (s *Searcher) Suggestions(rgxExpr *regexp.Regexp) []string {
 
 	idxs := s.SuffixArray.FindAllIndex(rgxExpr, -1)
 
-	results := []string{}
+	var results []string
 	m := make(map[string]string)
 	var count int
 
 	for _, idx := range idxs {
 
-		toIdx := idx[1] + 30
-		if toIdx > len(s.CompleteWorks)-1 {
-			toIdx = len(s.CompleteWorks)
-		}
-
-		// TODO  tener en cuenta que toma palabras por la mitad, la regex deberia empezar asi la palabra
-		key := s.CompleteWorks[idx[0]:toIdx]
-		before, _, found := strings.Cut(key, " ")
-		if found {
-			key = before
-		}
+		key := s.CompleteWorks[idx[0]+1 : idx[1]]
+		key = regexp.MustCompile(`[^a-zA-Z0-9 ]+`).ReplaceAllString(key, "")
 
 		_, ok := m[key]
 		// If the key doesn't exist
-		if !ok {
+		if !ok && key != "" {
 			m[key] = key
 			results = append(results, key)
 			count++

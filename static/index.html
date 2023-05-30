@@ -10,41 +10,47 @@
 
 <body>
 
-<p>
-<form id="form" autocomplete="off">
-    <div class="container">
-        <div class="searchInput">
-            <input type="text" id="query" name="query" onKeyUp="showResults(this.value)" />
-
-            <div id="result" class="resultBox">
-                <!-- here list are inserted from javascript -->
+<div class="form-style">
+    <form id="form" autocomplete="off">
+        <div class="form-style">
+            <div class="searchInput">
+                <input type="text" id="query" name="query" onKeyUp="showResults(this.value)" placeholder="Search something!" />
+                <div id="result" class="resultBox">
+                    <!-- here list are inserted from javascript -->
+                </div>
             </div>
-
         </div>
-    </div>
-    <div class="container">
-        <label for="ww">Whole Word</label>
-        <input type="checkbox" id="ww" name="ww">
-        <label for="cs">Case Sensitive</label>
-        <input type="checkbox" id="cs" name="cs">
-    </div>
-    <div class="container">
-    <button type="submit">Search</button>
-    </div>
-</form>
-</p>
+
+        <div class="form-style">
+            <label for="ww">whole word only</label>
+            <input type="checkbox" id="ww" name="ww">
+        </div>
+        <div class="form-style">
+            <label for="cs">case sensitive</label>
+            <input type="checkbox" id="cs" name="cs">
+        </div>
+
+
+        <div class="form-style">
+            <button type="submit">Search</button>
+        </div>
+
+    </form>
+</div>
+
 <p>
-<table id="table" class="styled-table">
-    <thead>
-    <tr><th>Results</th></tr>
-    </thead>
+<div class="form-style" id="results">
+    <table id="table" class="styled-table">
+        <thead id="table-head">
+        </thead>
 
-    <tbody id="table-body">
+        <tbody id="table-body">
+            <!-- results from search here! -->
+        </tbody>
+    </table>
+</div>
 
 
-    </tbody>
-</table>
-</p>
 <script src="app.js"></script>
 </body>
 
