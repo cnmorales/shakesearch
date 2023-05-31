@@ -44,7 +44,7 @@ all the document and return a list of 10 suggestions as maximum.
 
 ## Things I would like to improve or add in the future
 
-- Paging Support (Using pages and offset values to retrieve only a part of the info.
+- Paging Support (Using pages and offset values to retrieve only a part of the info).
 - "Load more" button (ability to offer more text before and after each result, similar to what Github does in PullRequests).
 - Quantity of results (Really simple, show the number of matches in all document).
 - Error handling and validations on server side can be improved.
@@ -52,5 +52,3 @@ all the document and return a list of 10 suggestions as maximum.
 - Highlight results in frontend instead of backend. (I really don't like inserting html marks in the result).
 - Order multisearch results by best matches (if a multiword search found all given words together should be the first result the user see)
 - Misspelling.
-
----
